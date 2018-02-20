@@ -9,6 +9,7 @@ public class Chocolate extends Food {
   public String eaten(Dog dog) {
     return "dog eats chocolate";
   }
+
   @Override
   public String eaten(Cat cat) {
     return "cat eats chocolate";
