@@ -17,37 +17,43 @@ import uk.ac.bris.cs.oxo.Player;
 import uk.ac.bris.cs.oxo.Side;
 import uk.ac.bris.cs.oxo.Spectator;
 
-public class OXO implements OXOGame {
-
+public class OXO implements OXOGame, Consumer<Move> {
 
 	private Player noughtSide, crossSide;
 	private Side currentSide;
 	private int size;
-	private SquareMatrix<Cell> matrix;
+	private SquareMatrix<Cell> prematrix;
+    private ImmutableMatrix<Cell> matrix;
+
+
+    private Consumer<Move> callback;
+
+
+
+    private Set<Move> validMvs;
 
 	public OXO(int size, Side startSide, Player nought, Player cross) {
 
 		if(size <= 0) throw new IllegalArgumentException("size invalid");
-
 		this.size = size;
 
 		this.currentSide = java.util.Objects.requireNonNull(startSide);
 		this.noughtSide = java.util.Objects.requireNonNull(nought);
 		this.crossSide = java.util.Objects.requireNonNull(cross);
 
-		this.matrix = new SquareMatrix<Cell>(size, new Cell());
-
+		this.prematrix = new SquareMatrix<Cell>(size, new Cell());
+        this.matrix = new ImmutableMatrix<Cell> (prematrix);
 	}
-	// 
-	// @Override
-	// public Matrix<Cell> board() {
-	// 	return matrix;
-	// }
-	//
-	// @Override
-	// public Side currentSide() {
-	// 	return currentSide;
-	// }
+
+	@Override
+	public Matrix<Cell> board() {
+		return matrix;
+	}
+
+	@Override
+	public Side currentSide() {
+		return currentSide;
+	}
 
 
 	@Override
@@ -64,19 +70,32 @@ public class OXO implements OXOGame {
 
 	@Override
 	public void start() {
-		// TODO
-		throw new RuntimeException("Implement me");
-	}
 
-	@Override
-	public Matrix<Cell> board() {
-		// TODO
-		throw new RuntimeException("Implement me");
-	}
+        Player player = (currentSide == Side.CROSS) ? crossSide : noughtSide;
 
-	@Override
-	public Side currentSide() {
-		// TODO
-		throw new RuntimeException("Implement me");
-	}
+        this.validMvs = validMoves();
+
+        player.makeMove(this, validMvs, callback);
+
+    }
+
+
+    private Set<Move> validMoves() {
+        Set<Move> moves = new HashSet<>();
+        for (int row = 0; row < matrix.rowSize(); row++) {
+            for (int col = 0; col < matrix.columnSize(); col++) {
+                moves.add(new Move(row, col));
+            } }
+        return moves;
+    }
+
+
+    @Override
+    public void accept(Move move) {
+
+                if (!validMvs.contains(move)) throw new IllegalArgumentException("Argument invalid");
+	            	// else this.matrix[move.row][move.column] = currentSide;
+								else this.matrix.put(move.row,move.column, currentSide);
+
+    }
 }
