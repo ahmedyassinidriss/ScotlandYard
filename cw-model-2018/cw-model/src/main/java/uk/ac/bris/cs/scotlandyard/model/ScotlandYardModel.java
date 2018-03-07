@@ -1,20 +1,99 @@
 package uk.ac.bris.cs.scotlandyard.model;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.requireNonNull;
+import static uk.ac.bris.cs.scotlandyard.model.Colour.BLACK;
+import static uk.ac.bris.cs.scotlandyard.model.Ticket.DOUBLE;
+import static uk.ac.bris.cs.scotlandyard.model.Ticket.SECRET;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import uk.ac.bris.cs.gamekit.graph.Edge;
 import uk.ac.bris.cs.gamekit.graph.Graph;
+import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
+
+
 
 // TODO implement all methods and pass all tests
 public class ScotlandYardModel implements ScotlandYardGame {
 
+	private List<Boolean> rounds;
+	private Graph<Integer, Transport> graph;
+	private ArrayList<PlayerConfiguration> configurations ;
+
+
+
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
 			PlayerConfiguration mrX, PlayerConfiguration firstDetective,
 			PlayerConfiguration... restOfTheDetectives) {
-		// TODO
+		this.rounds = requireNonNull(rounds);
+		if (rounds.isEmpty()) {
+			throw new IllegalArgumentException("Empty rounds");
+		}
+
+		this.graph = requireNonNull(graph);
+		if (graph.isEmpty()) {
+			throw new IllegalArgumentException("Empty rounds");
+		}
+
+		if (mrX.colour != BLACK) {
+			throw new IllegalArgumentException("MrX should be Black");
+		}
+
+		configurations = new ArrayList<>();
+		for (PlayerConfiguration configuration : restOfTheDetectives) {
+			configurations.add(requireNonNull(configuration));
+		}
+		configurations.add(0, requireNonNull(firstDetective));
+		configurations.add(0, requireNonNull(mrX));
+
+
+		Set<Integer> locationSet = new HashSet<>();
+		for (PlayerConfiguration configuration : configurations) {
+			if (locationSet.contains(configuration.location))
+				throw new IllegalArgumentException("Duplicate location");
+			locationSet.add(configuration.location);
+		}
+
+		Set<Colour> colourSet = new HashSet<>();
+		for (PlayerConfiguration configuration : configurations) {
+			if (colourSet.contains(configuration.colour))
+				throw new IllegalArgumentException("Duplicate colour");
+			colourSet.add(configuration.colour);
+
+			for (PlayerConfiguration c : configurations) {
+				for (Ticket t : Ticket.values()) {
+					if (!c.tickets.containsKey(t)) {
+						throw new IllegalArgumentException("Missing ticket");
+					}
+
+				}
+				if (c.colour.isDetective()) {
+					if (c.tickets.get(Ticket.DOUBLE) != 0 || c.tickets.get(Ticket.SECRET) != 0) {
+						throw new IllegalArgumentException("Missing ticket");
+					}
+				}
+			}
+		}
 	}
+
+
+
+
+
+
+
 
 	@Override
 	public void registerSpectator(Spectator spectator) {
