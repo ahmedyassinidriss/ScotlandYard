@@ -30,7 +30,10 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	private List<Boolean> rounds;
 	private Graph<Integer, Transport> graph;
-	private ArrayList<PlayerConfiguration> configurations ;
+	private List<ScotlandYardPlayer> players;
+	private int currentRound = NOT_STARTED;
+	private int mrXloc;
+	private int currrentPlayerIndex = 0;
 
 
 
@@ -51,13 +54,13 @@ public class ScotlandYardModel implements ScotlandYardGame {
 			throw new IllegalArgumentException("MrX should be Black");
 		}
 
-		configurations = new ArrayList<>();
+		List<PlayerConfiguration> configurations = new ArrayList<>();
 		for (PlayerConfiguration configuration : restOfTheDetectives) {
 			configurations.add(requireNonNull(configuration));
 		}
 		configurations.add(0, requireNonNull(firstDetective));
 		configurations.add(0, requireNonNull(mrX));
-
+		mrXloc = mrX.location;
 
 		Set<Integer> locationSet = new HashSet<>();
 		for (PlayerConfiguration configuration : configurations) {
@@ -86,7 +89,12 @@ public class ScotlandYardModel implements ScotlandYardGame {
 				}
 			}
 		}
-	}
+		players = new ArrayList<>();
+		for (PlayerConfiguration c:configurations)
+			players.add(new ScotlandYardPlayer(c.player,c.colour,c.location,c.tickets));
+		}
+
+
 
 
 
@@ -121,56 +129,65 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public List<Colour> getPlayers() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		List<Colour> l = new ArrayList<>();
+		for (ScotlandYardPlayer p : players) l.add(p.colour());
+		return Collections.unmodifiableList(l);
 	}
+
 
 	@Override
 	public Set<Colour> getWinningPlayers() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return Collections.unmodifiableSet(new HashSet<>());
 	}
 
 	@Override
 	public Optional<Integer> getPlayerLocation(Colour colour) {
-		// TODO
-		throw new RuntimeException("Implement me");
+			for (ScotlandYardPlayer p : players) {
+				if (p.colour() == colour && p.colour() != BLACK) return Optional.of(p.location());
+				if (p.colour() == BLACK && p.colour() == colour) {
+					if (getCurrentRound() < 3) return Optional.of(0);
+					if (getRounds().get(getCurrentRound() - 1)) {
+						mrXloc = p.location();
+						return Optional.of(mrXloc);
+					} else return Optional.of(mrXloc);
+				}
+			}
+			return Optional.empty();
 	}
+
 
 	@Override
 	public Optional<Integer> getPlayerTickets(Colour colour, Ticket ticket) {
-		// TODO
-		throw new RuntimeException("Implement me");
+		for(ScotlandYardPlayer p:players){
+			if(p.colour()==colour) return Optional.ofNullable(p.tickets().get(ticket));
+		}
+		return Optional.empty();
 	}
 
 	@Override
 	public boolean isGameOver() {
-		// TODO
-		throw new RuntimeException("Implement me");
+	return false;
 	}
 
 	@Override
 	public Colour getCurrentPlayer() {
-		// TODO
-		throw new RuntimeException("Implement me");
+	return players.get(currrentPlayerIndex).colour();
 	}
 
 	@Override
 	public int getCurrentRound() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return currentRound;
 	}
 
 	@Override
 	public List<Boolean> getRounds() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return Collections.unmodifiableList(rounds);
 	}
+
 
 	@Override
 	public Graph<Integer, Transport> getGraph() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return new ImmutableGraph<>(graph);
 	}
 
 }
