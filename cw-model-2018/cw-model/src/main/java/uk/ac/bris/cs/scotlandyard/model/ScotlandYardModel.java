@@ -60,7 +60,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 		configurations.add(0, requireNonNull(firstDetective));
 		configurations.add(0, requireNonNull(mrX));
-		mrXLoc = mrX.location;
+
 
 		Set<Integer> locationSet = new HashSet<>();
 		for (PlayerConfiguration configuration : configurations) {
@@ -145,9 +145,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				if(p.colour() == colour){
 					if(colour == BLACK){
 						if(getRounds().get(getCurrentRound())){
+							mrXLoc =p.location();
 							return Optional.of(p.location());
 						}else{
-							return Optional.empty();
+							return Optional.of(mrXLoc);
 						}
 					}else{
 						return Optional.of(p.location());
@@ -196,4 +197,4 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public void accept(Move move) {
 	// currentPlayerIndex ++
 	}
-}
+			}
