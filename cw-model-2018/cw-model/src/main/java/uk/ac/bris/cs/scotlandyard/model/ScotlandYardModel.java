@@ -26,14 +26,14 @@ import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
 
 
 // TODO implement all methods and pass all tests
-public class ScotlandYardModel implements ScotlandYardGame {
+public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	private List<Boolean> rounds;
 	private Graph<Integer, Transport> graph;
 	private List<ScotlandYardPlayer> players;
 	private int currentRound = NOT_STARTED;
-	private int mrXloc;
-	private int currrentPlayerIndex = 0;
+	private int mrXLoc; //Location of mrX that's displayed
+	private int currentPlayerIndex = 0;
 
 
 
@@ -47,11 +47,11 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 		this.graph = requireNonNull(graph);
 		if (graph.isEmpty()) {
-			throw new IllegalArgumentException("Empty rounds");
+			throw new IllegalArgumentException("Empty graph");
 		}
 
 		if (mrX.colour != BLACK) {
-			throw new IllegalArgumentException("MrX should be Black");
+			throw new IllegalArgumentException("MrX has colour Black");
 		}
 
 		List<PlayerConfiguration> configurations = new ArrayList<>();
@@ -60,7 +60,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 		}
 		configurations.add(0, requireNonNull(firstDetective));
 		configurations.add(0, requireNonNull(mrX));
-		mrXloc = mrX.location;
+		mrXLoc = mrX.location;
 
 		Set<Integer> locationSet = new HashSet<>();
 		for (PlayerConfiguration configuration : configurations) {
@@ -84,7 +84,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 				}
 				if (c.colour.isDetective()) {
 					if (c.tickets.get(Ticket.DOUBLE) != 0 || c.tickets.get(Ticket.SECRET) != 0) {
-						throw new IllegalArgumentException("Missing ticket");
+						throw new IllegalArgumentException("Detective has illegal ticket");
 					}
 				}
 			}
@@ -93,12 +93,6 @@ public class ScotlandYardModel implements ScotlandYardGame {
 		for (PlayerConfiguration c:configurations)
 			players.add(new ScotlandYardPlayer(c.player,c.colour,c.location,c.tickets));
 		}
-
-
-
-
-
-
 
 
 
@@ -118,7 +112,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 	@Override
 	public void startRotate() {
 		if(isGameOver()) throw new IllegalStateException();
-		ScotlandYardPlayer current = players.get(currrentPlayerIndex);
+		ScotlandYardPlayer current = players.get(currentPlayerIndex);
 		//if( for(ScotlandYardPlayer p:players) p
 		Set<Move> moves = new HashSet<>();
 		moves.add(new PassMove(current.colour()));
@@ -133,9 +127,9 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public List<Colour> getPlayers() {
-		List<Colour> l = new ArrayList<>();
-		for (ScotlandYardPlayer p : players) l.add(p.colour());
-		return Collections.unmodifiableList(l);
+		List<Colour> listOfPlayerColours = new ArrayList<>();
+		for (ScotlandYardPlayer p : players) listOfPlayerColours.add(p.colour());
+		return Collections.unmodifiableList(listOfPlayerColours);
 	}
 
 
@@ -144,16 +138,20 @@ public class ScotlandYardModel implements ScotlandYardGame {
 		return Collections.unmodifiableSet(new HashSet<>());
 	}
 
+
 	@Override
 	public Optional<Integer> getPlayerLocation(Colour colour) {
 			for (ScotlandYardPlayer p : players) {
-				if (p.colour() == colour && p.colour() != BLACK) return Optional.of(p.location());
-				if (p.colour() == BLACK && p.colour() == colour) {
-					if (getCurrentRound() < 3) return Optional.of(0);
-					if (getRounds().get(getCurrentRound() - 1)) {
-						mrXloc = p.location();
-						return Optional.of(mrXloc);
-					} else return Optional.of(mrXloc);
+				if(p.colour() == colour){
+					if(colour == BLACK){
+						if(getRounds().get(getCurrentRound())){
+							return Optional.of(p.location());
+						}else{
+							return Optional.empty();
+						}
+					}else{
+						return Optional.of(p.location());
+					}
 				}
 			}
 			return Optional.empty();
@@ -175,7 +173,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public Colour getCurrentPlayer() {
-	return players.get(currrentPlayerIndex).colour();
+	return players.get(currentPlayerIndex).colour();
 	}
 
 	@Override
@@ -194,4 +192,8 @@ public class ScotlandYardModel implements ScotlandYardGame {
 		return new ImmutableGraph<>(graph);
 	}
 
+	@Override
+	public void accept(Move move) {
+	// currentPlayerIndex ++
+	}
 }
