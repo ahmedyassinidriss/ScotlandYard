@@ -111,7 +111,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if (isGameOver()) throw new IllegalStateException();
 		for (ScotlandYardPlayer p : players) {
 			Set<Move> moves = new HashSet<>();
-			moves.add(new PassMove(p.colour()));
+			moves.add(new PassMove(p.colour())); //edit to: PassMove only when player actually cannot make another move (if no validmoves add)
 			p.player().makeMove(this, p.location(), moves, this);
 		}
 	}
@@ -194,7 +194,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public void accept(Move move) {
 		if (move.colour() == BLACK) currentRound++;
 	}
-/*
+
+
 	private Set<Move> validMove(Colour player) {
 		Set<Move> moves = new HashSet<>();
 		//Node<Integer> currentNode = graph.getNode(getPlayerLocation(player).get());
@@ -203,7 +204,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			//	edge.destination().value() ---> location
 			//		edge.data()
 		}
-	r
 
-*/
+
+
 }
