@@ -36,10 +36,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private int currentPlayerIndex = 0;
 
 
-
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
-			PlayerConfiguration mrX, PlayerConfiguration firstDetective,
-			PlayerConfiguration... restOfTheDetectives) {
+							 PlayerConfiguration mrX, PlayerConfiguration firstDetective,
+							 PlayerConfiguration... restOfTheDetectives) {
 		this.rounds = requireNonNull(rounds);
 		if (rounds.isEmpty()) {
 			throw new IllegalArgumentException("Empty rounds");
@@ -90,11 +89,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 		}
 		players = new ArrayList<>();
-		for (PlayerConfiguration c:configurations)
-			players.add(new ScotlandYardPlayer(c.player,c.colour,c.location,c.tickets));
-		}
-
-
+		for (PlayerConfiguration c : configurations)
+			players.add(new ScotlandYardPlayer(c.player, c.colour, c.location, c.tickets));
+	}
 
 
 	@Override
@@ -111,12 +108,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void startRotate() {
-		if(isGameOver()) throw new IllegalStateException();
-		for(ScotlandYardPaper p:player{
-		Set<Move> moves = new HashSet<>();
-		moves.add(new PassMove(p.colour()));
-		p.player().makeMove(this, current.location(), moves, this);
-	}
+		if (isGameOver()) throw new IllegalStateException();
+		for (ScotlandYardPlayer p : players) {
+			Set<Move> moves = new HashSet<>();
+			moves.add(new PassMove(p.colour()));
+			p.player().makeMove(this, p.location(), moves, this);
+		}
 	}
 
 	@Override
@@ -141,40 +138,40 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public Optional<Integer> getPlayerLocation(Colour colour) {
-			for (ScotlandYardPlayer p : players) {
-				if(p.colour() == colour){
-					if(colour == BLACK){
-						if(getRounds().get(getCurrentRound())){
-							mrXLoc =p.location();
-							return Optional.of(p.location());
-						}else{
-							return Optional.of(mrXLoc);
-						}
-					}else{
+		for (ScotlandYardPlayer p : players) {
+			if (p.colour() == colour) {
+				if (colour == BLACK) {
+					if (getRounds().get(getCurrentRound())) {
+						mrXLoc = p.location();
 						return Optional.of(p.location());
+					} else {
+						return Optional.of(mrXLoc);
 					}
+				} else {
+					return Optional.of(p.location());
 				}
 			}
-			return Optional.empty();
+		}
+		return Optional.empty();
 	}
 
 
 	@Override
 	public Optional<Integer> getPlayerTickets(Colour colour, Ticket ticket) {
-		for(ScotlandYardPlayer p:players){
-			if(p.colour()==colour) return Optional.ofNullable(p.tickets().get(ticket));
+		for (ScotlandYardPlayer p : players) {
+			if (p.colour() == colour) return Optional.ofNullable(p.tickets().get(ticket));
 		}
 		return Optional.empty();
 	}
 
 	@Override
 	public boolean isGameOver() {
-	return false;
+		return false;
 	}
 
 	@Override
 	public Colour getCurrentPlayer() {
-	return players.get(currentPlayerIndex).colour();
+		return players.get(currentPlayerIndex).colour();
 	}
 
 	@Override
@@ -195,16 +192,18 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void accept(Move move) {
-	if(move.colour()==BLACK) currentRound++;
+		if (move.colour() == BLACK) currentRound++;
 	}
-			
+/*
 	private Set<Move> validMove(Colour player) {
 		Set<Move> moves = new HashSet<>();
 		//Node<Integer> currentNode = graph.getNode(getPlayerLocation(player).get());
 		for(Edge<Integer, Transport> edge : graph.getEdgesFrom(graph.getNode(getPlayerLocation(player).get())))
 		{
-		//	edge.destination().value() ---> location
-		//		edge.data()
+			//	edge.destination().value() ---> location
+			//		edge.data()
 		}
-		
-		}
+	r
+
+*/
+}
