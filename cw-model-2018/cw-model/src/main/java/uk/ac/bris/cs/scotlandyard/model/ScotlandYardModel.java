@@ -112,11 +112,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public void startRotate() {
 		if(isGameOver()) throw new IllegalStateException();
-		ScotlandYardPlayer current = players.get(currentPlayerIndex);
-		//if( for(ScotlandYardPlayer p:players) p
+		for(ScotlandYardPaper p:player{
 		Set<Move> moves = new HashSet<>();
-		moves.add(new PassMove(current.colour()));
-		current.player().makeMove(this, current.location(), moves, this);
+		moves.add(new PassMove(p.colour()));
+		p.player().makeMove(this, current.location(), moves, this);
+	}
 	}
 
 	@Override
@@ -195,6 +195,16 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void accept(Move move) {
-	// currentPlayerIndex ++
+	if(move.colour()==BLACK) currentRound++;
 	}
-			}
+			
+	private Set<Move> validMove(Colour player) {
+		Set<Move> moves = new HashSet<>();
+		//Node<Integer> currentNode = graph.getNode(getPlayerLocation(player).get());
+		for(Edge<Integer, Transport> edge : graph.getEdgesFrom(graph.getNode(getPlayerLocation(player).get())))
+		{
+		//	edge.destination().value() ---> location
+		//		edge.data()
+		}
+		
+		}
