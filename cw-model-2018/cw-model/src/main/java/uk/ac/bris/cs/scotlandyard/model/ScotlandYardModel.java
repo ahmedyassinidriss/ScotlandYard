@@ -137,7 +137,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		for (ScotlandYardPlayer p : players) {
 			if (p.colour() == colour) {
 				if (colour == BLACK) {
-					if (getRounds().get(0)) { // changed this DAVIS if you check getRounds on java it will make sense
+					if (getRounds().get(currentRound)) {
 						mrXLoc = p.location();
 						return Optional.of(p.location());
 					} else {
@@ -221,7 +221,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		private Set<Move> validMoveDetective(ScotlandYardPlayer current){
 			Set<Move> moves = new HashSet<>();
 			if(noMoves(current)) moves.add(new PassMove(current.colour())); // if stuck allow passmove
-			for (Edge<Integer, Transport> edge : graph.getEdgesFrom(graph.getNode(current.location()))) { //loop gives all possible combination of nodes from
+			for (Edge<Integer, Transport> edge : graph.getEdgesFrom(graph.getNode(current.location()))) { //loop gives all possible combinations of nodes from
 																										// current location with respective transport
 				Integer nextLocation = edge.destination().value();
 				Ticket t = fromTransport(edge.data());
@@ -248,18 +248,17 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					if (current.tickets().get(SECRET) > 0) moves.add(firstMoveSecret); // also need a secret ticket for mrX
 				}
 
-
+				// Double Move
 				for (Edge<Integer, Transport> secondEdge : graph.getEdgesFrom(graph.getNode(nextLocation))) { //all edges leading from all edges leading from intial location
 					Integer nextLocationDouble = secondEdge.destination().value(); // double for loop for potential double moves
 					Ticket t2 = fromTransport(secondEdge.data());
 					TicketMove secondMove = new TicketMove(current.colour(), t2, nextLocationDouble);
 					TicketMove secondMoveSecret = new TicketMove(current.colour(), SECRET, nextLocationDouble);
-					if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation)) { // will need both locations empty to prevent loss
-						if (current.tickets().get(DOUBLE) > 0) { // also will need a double ticket
+					if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation) && (current.tickets().get(DOUBLE) > 0)) { //will need a double ticket & both locations moving to being empty
 							if (t2.equals(t)) {
-								if (current.tickets().get(t2) > 1) // if using same ticket twice need more than one
+								if (current.tickets().get(t2) >= 2) // if using same ticket twice need more than one
 									moves.add(new DoubleMove(current.colour(), firstMove, secondMove));
-							} else if (current.tickets().get(t2) > 0) // if not the same just need one of second type (first already checked )
+							} else if (current.tickets().get(t2) >= 1) // if not the same just need one of second type (first already checked )
 								moves.add(new DoubleMove(current.colour(), firstMove, secondMove));
 
 							if (current.tickets().get(SECRET) > 0) { // need at least one secret and either one of t or t2 for following 2 double moves
@@ -268,15 +267,15 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 								if (current.tickets().get(t) > 0)
 									moves.add(new DoubleMove(current.colour(), firstMove, secondMoveSecret));
 							}
-							if (current.tickets().get(SECRET) >= 2) // self explanotory
+							if (current.tickets().get(SECRET) >= 2) // 2 SECRET tickets no, other tickets required
 								moves.add(new DoubleMove(current.colour(), firstMoveSecret, secondMoveSecret));
 						}
 					}
 				}
-			}
 		return Collections.unmodifiableSet(moves);
 	}
 
+	// if detective is on location, returns false (if Mrx is on location, returns true, because detectives can move onto
 		private boolean isLocationEmpty(Integer location){ // used for valid move function mainly to prevent players moving onto occupied places
 			int i = 0;
 			List<ScotlandYardPlayer> tempPlayers = new ArrayList<>();
@@ -288,6 +287,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 			return (i == 0);
 		}
+
 
 		private boolean noMoves(ScotlandYardPlayer p){
 			int i = 0;
@@ -302,17 +302,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				} else if (isLocationEmpty(e.destination().value())) j++; // check if detective is stuck so no moves
 			}
 			return (j == 0);
-		}
-
-		private boolean onlySecretMoves(ScotlandYardPlayer p){
-			int i = 0;
-			for (Ticket t : Ticket.values()) {
-				if (t != SECRET) {
-					if (p.tickets().get(t) == 0) i++; // if any non-secret tickets exist i > 0
-				}
-			}
-			boolean y = p.tickets().get(SECRET) > 0; // just making sure there are secret tickets to use
-			return (y && (i == 4));
 		}
 }
 
