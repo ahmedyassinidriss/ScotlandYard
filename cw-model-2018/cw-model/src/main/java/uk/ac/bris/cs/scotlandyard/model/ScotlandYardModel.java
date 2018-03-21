@@ -133,21 +133,21 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	@Override
-	public Optional<Integer> getPlayerLocation(Colour colour) {
-		for (ScotlandYardPlayer p : players) {
-            if (p.colour() == colour) {
-                if (colour == BLACK) {
-                    if (getRounds().get(currentRound)) {    //if its reveal round show MrX location, (however if we JUST show this, we are not keeping track of the last known location.
-                        return Optional.of(p.location());
-                    }
-                }
-                return Optional.of(p.location());
-            }
-            return Optional.empty();
+	public Optional<Integer> getPlayerLocation(Colour colour) {    //the function returns the location of the player specified in the argument, not a list of locations of all players. also can't for loop a return statement anyways.
+		for (ScotlandYardPlayer p : players) { //better way to specify specific player when given color
+			if (p.colour() == colour) {
+				if (colour == BLACK) {
+					if (getRounds().get(currentRound)) {    //if its reveal round show MrX actual location
+						return Optional.of(p.location());
+					} else return Optional.of(mrXLoc);
+				}
+				return Optional.of(p.location());
+			}
+		}
+		return Optional.empty();    //if the player specified in the argument is not in the list of players
+	}
 
-        }
-
-		    /*  TA said getPlayerLocation should just return the player Location, not modify anything, which makes sense, get playerLocation is a getter
+		    /*  TA said getPlayerLocation should just return the player Location, not modify anything, which makes sense, get playerLocation is a getter, so have moved the changing the location of MrX to accept method
 			if (p.colour() == colour) {
 				if (colour == BLACK) {
 				    System.out.println(currentRound);
@@ -165,7 +165,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 		return Optional.empty();
 		*/
-	}
 
 
 	@Override
@@ -210,7 +209,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	/* Can do visitor pattern or instanceof
-	visit(DoybleMovr d )
+	visit(DoubleMove d )
 
 	*/
 
@@ -220,33 +219,40 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		ScotlandYardPlayer current = players.get(currentPlayerIndex);
 		if (!(validMove(current).contains(move))) throw new IllegalArgumentException("Move is not valid"); // needed to pass illegal moves test
 
+		//have moved the updating location into accept method, instead of in a getter.
         if (move instanceof DoubleMove){
-            players.get(currentPlayerIndex).location(((DoubleMove) move).firstMove().destination());
+			current.location(((DoubleMove) move).secondMove().destination()); //moving to final location after the DoubleMove, no need to go to intermediate position, as it is already checked whether the location is empty or not.
+        }
+        if (move instanceof TicketMove){
+			current.location(((TicketMove) move).destination());
         }
 
-        //move.visit(this); visitor pattern (instead of instanceof)
 
+		//move.visit(this); visitor pattern (instead of instanceof)
+		//mvnw -Dtest=ModelValidMoveTest#testMrXOnlySecretMovesIfOnlySecretMoveTicketsLeft* test
 
-
+		System.out.println("[currentRound is: " + currentRound + "]");
+		System.out.println("[size of rounds is " + rounds.size() + "]");
 
 		if (move.colour() == BLACK) {
             currentRound++;
             if (getRounds().get(currentRound)){
-                mrXLoc = players.get(0).location();
+                mrXLoc = current.location();
             }
 			if (move instanceof  DoubleMove) {
                 currentRound++;     // might be incorrect way of checking for double move (currentRound stuff needs work)
                 if (getRounds().get(currentRound)){
-                    mrXLoc = players.get(0).location();
+                    mrXLoc = current.location();
                 }
-
-
             }
 		}
-		if (currentPlayerIndex < (players.size() - 1)) { // this is where it loops through all players till the last detective
-			currentPlayerIndex++;  // if not yet at the end of the list of players will skip to next
+
+        //cannot be done with iterator?
+		if (currentPlayerIndex < (players.size() - 1)) { // if not yet at the end of the list of players "this is where it loops through all players till the last detective" How??
+			currentPlayerIndex++;  // if not yet at the end of the list of players will go to next player
 			requestMove();
-		} else currentPlayerIndex = 0; // if at the end we go back to mrX and startRotate needs to be called again cuz end of round
+		}
+		else currentPlayerIndex = 0; // if at the end we go back to mrX and startRotate needs to be called again cuz end of round
 	}
 
 	// request move simply get current player to make a move
@@ -291,16 +297,16 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				}
 
 				// Double Move
-				for (Edge<Integer, Transport> secondEdge : graph.getEdgesFrom(graph.getNode(nextLocation))) { //all edges leading from all edges leading from intial location
+				for (Edge<Integer, Transport> secondEdge : graph.getEdgesFrom(graph.getNode(nextLocation))) { //all edges leading from all edges leading from initial location
 					Integer nextLocationDouble = secondEdge.destination().value(); // double for loop for potential double moves
 					Ticket t2 = fromTransport(secondEdge.data());
 					TicketMove secondMove = new TicketMove(current.colour(), t2, nextLocationDouble);
 					TicketMove secondMoveSecret = new TicketMove(current.colour(), SECRET, nextLocationDouble);
 					if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation) && (current.tickets().get(DOUBLE) > 0)) { //will need a double ticket & both locations moving to being empty
 							if (t2.equals(t)) {
-								if (current.tickets().get(t2) >= 2) // if using same ticket twice need more than one
+								if (current.tickets().get(t2) >= 2) // making double move using same ticket twice
 									moves.add(new DoubleMove(current.colour(), firstMove, secondMove));
-							} else if (current.tickets().get(t2) >= 1) // if not the same just need one of second type (first already checked )
+							} else if (current.tickets().get(t2) >= 1) // making double move using different (non-SECRET) ticket
 								moves.add(new DoubleMove(current.colour(), firstMove, secondMove));
 
 							if (current.tickets().get(SECRET) > 0) { // need at least one secret and either one of t or t2 for following 2 double moves
@@ -309,7 +315,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 								if (current.tickets().get(t) > 0)
 									moves.add(new DoubleMove(current.colour(), firstMove, secondMoveSecret));
 							}
-							if (current.tickets().get(SECRET) >= 2) // 2 SECRET tickets no, other tickets required
+							if (current.tickets().get(SECRET) >= 2) // 2 SECRET tickets, no other tickets required
 								moves.add(new DoubleMove(current.colour(), firstMoveSecret, secondMoveSecret));
 						}
 					}
@@ -317,18 +323,18 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return Collections.unmodifiableSet(moves);
 	}
 
-	// if detective is on location, returns false (if Mrx is on location, returns true, because detectives can move onto
-		private boolean isLocationEmpty(Integer location){ // used for valid move function mainly to prevent players moving onto occupied places
-			int i = 0;
-			List<ScotlandYardPlayer> tempPlayers = new ArrayList<>();
-			for (ScotlandYardPlayer p : players) {
-				if (p.colour() != BLACK) tempPlayers.add(p); // list of detectives
-			} // only need to take into account detectives since "mrX cant move onto mrX" anyway and detectives can do so as to win the game
+	// if detective is on location, returns false (if Mrx is on location, returns true, because detectives can move onto)
+		private boolean isLocationEmpty(Integer location) { // used for valid move function mainly to prevent players moving onto occupied places
+            List<ScotlandYardPlayer> tempPlayers = new ArrayList<>();
+            for (ScotlandYardPlayer p : players) {
+                if (p.colour() != BLACK) tempPlayers.add(p); // list of detectives
+            } // only need to take into account detectives since "mrX cant move onto mrX" anyway and detectives can do so as to win the game
+
 			for (ScotlandYardPlayer t : tempPlayers) {
-				if (location == t.location()) i++; // i = 0 if location not occupied by any players so if not 0 must be 1 and must be occupied
+				if (location == t.location()) return false; // simply return false/true much better than i++
 			}
-			return (i == 0);
-		}
+			return true;
+        }
 
 
 		private boolean noMoves(ScotlandYardPlayer p){
