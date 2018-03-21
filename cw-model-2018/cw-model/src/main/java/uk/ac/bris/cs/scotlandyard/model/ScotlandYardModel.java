@@ -135,9 +135,24 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public Optional<Integer> getPlayerLocation(Colour colour) {
 		for (ScotlandYardPlayer p : players) {
+            if (p.colour() == colour) {
+                if (colour == BLACK) {
+                    if (getRounds().get(currentRound)) {    //if its reveal round show MrX location, (however if we JUST show this, we are not keeping track of the last known location.
+                        return Optional.of(p.location());
+                    }
+                }
+                return Optional.of(p.location());
+            }
+            return Optional.empty();
+
+        }
+
+		    /*  TA said getPlayerLocation should just return the player Location, not modify anything, which makes sense, get playerLocation is a getter
 			if (p.colour() == colour) {
 				if (colour == BLACK) {
-					if (getRounds().get(currentRound)) {
+				    System.out.println(currentRound);
+                    System.out.println("size is" + rounds.size());  //on the test, rounds of length 1 is supplied, and we are trying to access the second item [1] in that list, so is Index Error
+					if (getRounds().get(currentRound)) {    //LENGTH of rounds is number of moves mrX can make. i.e. has 22 items
 						mrXLoc = p.location();
 						return Optional.of(p.location());
 					} else {
@@ -149,6 +164,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 		}
 		return Optional.empty();
+		*/
 	}
 
 
@@ -192,14 +208,40 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		requestMove(); // got rid off for loop to pass test which said playersWaitForOtherPlayer if they havent made a move yet
 	}
 
+
+	/* Can do visitor pattern or instanceof
+	visit(DoybleMovr d )
+
+	*/
+
 	@Override
 	public void accept(Move move) {
 		if (move == null) throw new NullPointerException("Move cannot be null"); // check if null to past test
 		ScotlandYardPlayer current = players.get(currentPlayerIndex);
 		if (!(validMove(current).contains(move))) throw new IllegalArgumentException("Move is not valid"); // needed to pass illegal moves test
-		if (move.colour() == BLACK) { // could have said if currentPlayerIndex is 0
-			currentRound++;
-			if (move instanceof  DoubleMove) currentRound++; // might be incorrect way of checking for double move (currentRound stuff needs work)
+
+        if (move instanceof DoubleMove){
+            players.get(currentPlayerIndex).location(((DoubleMove) move).firstMove().destination());
+        }
+
+        //move.visit(this); visitor pattern (instead of instanceof)
+
+
+
+
+		if (move.colour() == BLACK) {
+            currentRound++;
+            if (getRounds().get(currentRound)){
+                mrXLoc = players.get(0).location();
+            }
+			if (move instanceof  DoubleMove) {
+                currentRound++;     // might be incorrect way of checking for double move (currentRound stuff needs work)
+                if (getRounds().get(currentRound)){
+                    mrXLoc = players.get(0).location();
+                }
+
+
+            }
 		}
 		if (currentPlayerIndex < (players.size() - 1)) { // this is where it loops through all players till the last detective
 			currentPlayerIndex++;  // if not yet at the end of the list of players will skip to next
