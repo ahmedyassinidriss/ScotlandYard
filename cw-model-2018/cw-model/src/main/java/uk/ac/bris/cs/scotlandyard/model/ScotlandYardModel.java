@@ -137,9 +137,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		for (ScotlandYardPlayer p : players) { //better way to specify specific player when given color
 			if (p.colour() == colour) {
 				if (colour == BLACK) {
-					if (getRounds().get(currentRound)) {    //if its reveal round show MrX actual location
+					if (getRounds().get(currentRound)) {    //if its reveal round show MrX actual location. Don't need to update mrXLoc to show a location. Don't update something in a getter.
 						return Optional.of(p.location());
-					} else return Optional.of(mrXLoc);
+					} else return Optional.of(mrXLoc);		//if not reveal round, then show last revealround location.
 				}
 				return Optional.of(p.location());
 			}
@@ -204,7 +204,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public void startRotate() {
 		if (isGameOver()) throw new IllegalStateException();
-		requestMove(); // got rid off for loop to pass test which said playersWaitForOtherPlayer if they havent made a move yet
+		requestMove(); // got rid off for loop to pass test which said playersWaitForOtherPlayer if they haven't made a move yet
 	}
 
 
@@ -229,6 +229,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 		//move.visit(this); visitor pattern (instead of instanceof)
+
 		//mvnw -Dtest=ModelValidMoveTest#testMrXOnlySecretMovesIfOnlySecretMoveTicketsLeft* test
 
 		System.out.println("[currentRound is: " + currentRound + "]");
@@ -239,7 +240,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
             if (getRounds().get(currentRound)){
                 mrXLoc = current.location();
             }
-			if (move instanceof  DoubleMove) {
+			if (move instanceof  DoubleMove) { //correct way of checking if move is DoubleMove
                 currentRound++;     // might be incorrect way of checking for double move (currentRound stuff needs work)
                 if (getRounds().get(currentRound)){
                     mrXLoc = current.location();
@@ -327,7 +328,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		private boolean isLocationEmpty(Integer location) { // used for valid move function mainly to prevent players moving onto occupied places
             List<ScotlandYardPlayer> tempPlayers = new ArrayList<>();
             for (ScotlandYardPlayer p : players) {
-                if (p.colour() != BLACK) tempPlayers.add(p); // list of detectives
+                if (p.colour() != BLACK) tempPlayers.add(p); // TempPlayers is now list of detectives
             } // only need to take into account detectives since "mrX cant move onto mrX" anyway and detectives can do so as to win the game
 
 			for (ScotlandYardPlayer t : tempPlayers) {
