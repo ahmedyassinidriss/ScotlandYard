@@ -179,16 +179,16 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
     @Override
     public boolean isGameOver() {
-        if(noMoves(players.get(0))) return true; //checks if mrX has no moves so far need to add more conditions such as no rounds left etc
+        if(noMovesMrx(players.get(0))) return true; //checks if mrX has no moves so far need to add more conditions such as no rounds left etc
         if(currentRound==rounds.size()) return true;
         int i = 0;
         for(ScotlandYardPlayer p:players) {
             if (p.colour() != BLACK) {
-                if(p.location()==players.get(0).location()) return true;
+                if(p.location()==players.get(0).location()) return true; // if a detectives is at same location as mrX then game over
                 if (noMoves(p)) i++;
             }
         }
-        return (i==(players.size()-1)); // if i is same as the number of detectives they must all be stuck
+        if(i==(players.size()-1)) return true;// if i is same as the number of detectives they must all be stuck
     }
 
     @Override
@@ -362,6 +362,24 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
             if (p.colour() == BLACK) {
                 if (isLocationEmpty(e.destination().value())) j++;// checking if mrX is stuck so no moves
             } else if (isLocationEmpty(e.destination().value())) j++; // check if detective is stuck so no moves
+        }
+        return (j == 0);
+    }
+    private boolean noMovesMrx(ScotlandYardPlayer p){
+        int j = 0;
+        for (Move move : validMove(p)) {
+            if(p.colour()!=BLACK){
+            if(move instanceof TicketMove){
+                for(ScotlandYardPlayer p:players){
+                    if(((TicketMove) move).destination()!=p.location()) j++;
+                }
+            }
+            if(move instanceof DoubleMove)
+                for(ScotlandYardPlayer p:players){
+                    if((((DoubleMove) move).firstMove().destination()!=p.location() || (((DoubleMove) move).secondMove().destination()!= p.location())
+                            j++;
+                }
+        }
         }
         return (j == 0);
     }
