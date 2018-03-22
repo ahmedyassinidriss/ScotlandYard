@@ -366,3 +366,4 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         return (j == 0);
     }
 }
+//l
