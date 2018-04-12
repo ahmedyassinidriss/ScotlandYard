@@ -222,9 +222,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         }
         boolean allDetectivesStuck = true;
         for (ScotlandYardPlayer d:detectives) {
-                if (d.location() == players.get(0).location())
-                    return true; // if a detectives is at same location as mrX then game over
-                if (!stuck(d)) allDetectivesStuck = false;
+            if (d.location() == players.get(0).location())
+                return true; // if a detectives is at same location as mrX then game over
+            if (!stuck(d)) allDetectivesStuck = false;
         }
         return (allDetectivesStuck);// if i is same as the number of detectives they must all be stuck
     }
@@ -358,9 +358,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
                 if (current.hasTickets(t)) moves.add(firstMove);
             }
         }
-    //    boolean noNeededTicket = true;
-     //   for (Move move : moves) if (current.hasTickets(((TicketMove) move).ticket())) noNeededTicket = false;
-    //    if (noMoves(current) || noNeededTicket) moves.add(new PassMove(current.colour()));
+        //    boolean noNeededTicket = true;
+        //   for (Move move : moves) if (current.hasTickets(((TicketMove) move).ticket())) noNeededTicket = false;
+        //    if (noMoves(current) || noNeededTicket) moves.add(new PassMove(current.colour()));
         if(moves.isEmpty()) moves.add(new PassMove(current.colour()));
         return Collections.unmodifiableSet(moves);
     }
@@ -486,3 +486,5 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         return (isStuck);
     }
 }
+
+
