@@ -57,8 +57,6 @@ public class AIdo implements PlayerFactory {
 	    //penalise for certain moves, include DoubleMove
 
 
-
-
         Double transportScore(ScotlandYardView view, int locationToScore) {
             // Check for how many Transport options at the location
             Double numberOfTransport = 0.0;
@@ -90,7 +88,6 @@ public class AIdo implements PlayerFactory {
 
 
 
-
         Double numberOfMovesScore (ScotlandYardView view, int locationToScore) {
     // Check for how many edges from the location
             //Double numberOfMoves = (Double) view.getGraph().getEdgesFrom(view.getGraph().getNode(locationToScore)).size(); //ask TA or Forum
@@ -115,7 +112,6 @@ public class AIdo implements PlayerFactory {
                 if (m instanceof TicketMove){
                     ScoresMap.put(m, numberOfMovesScore(view, ((TicketMove) m).destination()));}
             }
-
 
             for (Move m : moves) {
 
