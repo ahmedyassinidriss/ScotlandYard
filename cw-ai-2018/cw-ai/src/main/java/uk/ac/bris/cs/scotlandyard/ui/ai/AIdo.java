@@ -43,13 +43,6 @@ import uk.ac.bris.cs.gamekit.graph.Node;
 import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
 
 
-//
-
-
-
-
-
-
 @ManagedAI("AIdo")
 public class AIdo implements PlayerFactory {
 

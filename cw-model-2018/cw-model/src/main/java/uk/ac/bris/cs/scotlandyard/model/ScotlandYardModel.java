@@ -101,7 +101,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         for (PlayerConfiguration c : configurations)
             players.add(new ScotlandYardPlayer(c.player, c.colour, c.location, c.tickets));
 
-        spectators = new ArrayList<>(); // intiating empty list of spectators
+        spectators = new ArrayList<>();
 
         detectives = new ArrayList<>();
         for (ScotlandYardPlayer p : players) {
@@ -137,7 +137,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         return Collections.unmodifiableList(listOfPlayerColours);
     }
 
-
+//returns winning players
     @Override
     public Set<Colour> getWinningPlayers() {
         Set<Colour> mrXWins = new HashSet<Colour>();
@@ -145,18 +145,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         Set<Colour> detectivesWin = new HashSet<>();
         for(ScotlandYardPlayer d:detectives) detectivesWin.add(d.colour());
 
-        //if no Detective has a ticket, MrX wins
-        boolean noDetectiveHasTickets = true;
-        for (ScotlandYardPlayer d : detectives) {
-            for (Ticket t : Ticket.values()) {
-                if (d.hasTickets(t)) noDetectiveHasTickets = false;
-            }
-        }
-        if (noDetectiveHasTickets) return detectivesWin;
-
-        // if MrX is stuck, all Detectives win
         if (stuck(players.get(0))) return Collections.unmodifiableSet(detectivesWin);
-        //if any detective at same location detectives win
         boolean AllDetectivesStuck = true;
         for (ScotlandYardPlayer d : detectives) {
             if (d.location() == players.get(0).location()) return Collections.unmodifiableSet(detectivesWin);
@@ -168,13 +157,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         return Collections.unmodifiableSet(emptySet());
     }
 
-
     @Override
     public Optional<Integer> getPlayerLocation(Colour colour) {
         for (ScotlandYardPlayer p : players) {
             if (p.colour() == colour) {
                 if (colour == BLACK) {
-                    //if its reveal round show MrX location, (however if we JUST show this, we are not keeping track of the last known location.
                     return Optional.of(mrXLoc);
 
                 }
@@ -184,8 +171,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         return Optional.empty();
 
     }
-
-
 
     @Override
     public Optional<Integer> getPlayerTickets(Colour colour, Ticket ticket) {
@@ -197,18 +182,18 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
     @Override
     public boolean isGameOver() {
-        if (currentPlayerIndex == 0) { // needs to be end of round for game to be over
+        if (currentPlayerIndex == 0) {
             if (stuck(players.get(0)))
-                return true; //checks if mrX is stuck so far need to add more conditions such as no rounds left etc
+                return true;
             if (currentRound == rounds.size()) return true;
         }
         boolean allDetectivesStuck = true;
         for (ScotlandYardPlayer d:detectives) {
             if (d.location() == players.get(0).location())
-                return true; // if a detectives is at same location as mrX then game over
+                return true;
             if (!stuck(d)) allDetectivesStuck = false;
         }
-        return (allDetectivesStuck);// if i is same as the number of detectives they must all be stuck
+        return (allDetectivesStuck);
     }
 
     @Override
@@ -226,13 +211,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         return Collections.unmodifiableList(rounds);
     }
 
-
     @Override
     public Graph<Integer, Transport> getGraph() {
         return new ImmutableGraph<>(graph);
     }
 
-    
     @Override
     public void startRotate() {
         if (isGameOver()) throw new IllegalStateException("Game is over");
@@ -373,12 +356,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
             }
 
             // Double Move
-            for (Edge<Integer, Transport> secondEdge : graph.getEdgesFrom(graph.getNode(nextLocation))) { //all edges leading from all edges leading from intial location
+            for (Edge<Integer, Transport> secondEdge : graph.getEdgesFrom(graph.getNode(nextLocation))) {
                 Integer nextLocationDouble = secondEdge.destination().value();
                 Ticket t2 = fromTransport(secondEdge.data());
                 TicketMove secondMove = new TicketMove(current.colour(), t2, nextLocationDouble);
                 TicketMove secondMoveSecret = new TicketMove(current.colour(), SECRET, nextLocationDouble);
-                if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation) && (current.hasTickets(DOUBLE)) && (getCurrentRound() < (rounds.size() - 1))) { //will need a double ticket & both locations moving to being empty
+                if (isLocationEmpty(nextLocationDouble) && isLocationEmpty(nextLocation) && (current.hasTickets(DOUBLE)) && (getCurrentRound() < (rounds.size() - 1))) {
                     if (t2.equals(t)) {
                         if (current.tickets().get(t2) >= 2)
                             moves.add(new DoubleMove(current.colour(), firstMove, secondMove));
@@ -414,6 +397,18 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
             if (move instanceof TicketMove) {
                 for (ScotlandYardPlayer d : detectives) {
                     if (((TicketMove) move).destination() != d.location()) {
+                        isStuck = false;
+                        break;
+                    }
+                }
+            }
+            if (move instanceof DoubleMove) {
+                for (ScotlandYardPlayer d : detectives) {
+                    if (((DoubleMove) move).firstMove().destination() != d.location()) {
+                        isStuck = false;
+                        break;
+                    }
+                    if (((DoubleMove) move).secondMove().destination() != d.location()) {
                         isStuck = false;
                         break;
                     }
