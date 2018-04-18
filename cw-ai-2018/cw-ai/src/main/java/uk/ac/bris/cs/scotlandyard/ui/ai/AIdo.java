@@ -13,7 +13,6 @@ import uk.ac.bris.cs.scotlandyard.ai.PlayerFactory;
 import uk.ac.bris.cs.scotlandyard.model.*;
 
 
-//copy from ScotlandYardModel
 
 import java.util.*;
 
