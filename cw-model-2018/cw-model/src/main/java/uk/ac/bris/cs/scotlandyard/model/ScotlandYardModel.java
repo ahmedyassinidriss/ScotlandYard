@@ -1,11 +1,8 @@
 package uk.ac.bris.cs.scotlandyard.model;
 
-import static java.util.Arrays.asList;
+
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableCollection;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableSet;
+
 import static java.util.Objects.requireNonNull;
 import static uk.ac.bris.cs.scotlandyard.model.Colour.BLACK;
 import static uk.ac.bris.cs.scotlandyard.model.Ticket.DOUBLE;
@@ -24,7 +21,6 @@ import java.util.function.Consumer;
 
 import uk.ac.bris.cs.gamekit.graph.Edge;
 import uk.ac.bris.cs.gamekit.graph.Graph;
-import uk.ac.bris.cs.gamekit.graph.Node;
 import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
 
 
@@ -223,9 +219,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
     }
 
 
-	/* Can do visitor pattern or instanceof
-	visit(DoybleMovr d )
-	*/
 
 	//changes state of game and informs spectators of change
     @Override
