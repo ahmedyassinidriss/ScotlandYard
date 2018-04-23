@@ -62,14 +62,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         configurations.add(0, requireNonNull(firstDetective));
         configurations.add(0, requireNonNull(mrX));
 
-
         Set<Integer> locationSet = new HashSet<>();
         for (PlayerConfiguration configuration : configurations) {
             if (locationSet.contains(configuration.location))
                 throw new IllegalArgumentException("Duplicate location");
             locationSet.add(configuration.location);
         }
-
 
         Set<Colour> colourSet = new HashSet<>();
         for (PlayerConfiguration configuration : configurations) {
@@ -78,13 +76,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
                 throw new IllegalArgumentException("Duplicate colour");
             colourSet.add(configuration.colour);
 
-
             for (PlayerConfiguration c : configurations) {
                 for (Ticket t : Ticket.values()) {
                     if (!c.tickets.containsKey(t)) {
                         throw new IllegalArgumentException("Missing ticket");
                     }
-
                 }
                 if (c.colour.isDetective()) {
                     if (c.tickets.get(Ticket.DOUBLE) != 0 || c.tickets.get(Ticket.SECRET) != 0) {
@@ -105,13 +101,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         }
     }
 
-
     @Override
     public void registerSpectator(Spectator spectator) {
         if (spectator == null) throw new NullPointerException("Spectator can't be null");
         if (spectators.contains(spectator)) throw new IllegalArgumentException("Spectator already registered");
         spectators.add(spectator);
-
     }
 
     @Override
@@ -217,17 +211,13 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         requestMove();
     }
 
-
-
 	//changes state of game and informs spectators of change
     @Override
     public void accept(Move move) {
-        if (move == null) throw new NullPointerException("Move cannot be null"); // check if null to past test
+        if (move == null) throw new NullPointerException("Move cannot be null");
         ScotlandYardPlayer current = players.get(currentPlayerIndex);
         if (!(validMove(current).contains(move)))
-            throw new IllegalArgumentException("Move is not valid"); // needed to pass illegal moves test
-
-        //move.visit(this); visitor pattern (instead of instanceof)
+            throw new IllegalArgumentException("Move is not valid");
         if (move.colour() == BLACK) acceptMrX(move);
         else acceptDetective(move);
     }
