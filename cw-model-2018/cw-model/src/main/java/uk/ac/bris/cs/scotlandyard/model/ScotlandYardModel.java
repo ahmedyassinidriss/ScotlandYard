@@ -159,7 +159,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
             if (p.colour() == colour) {
                 if (colour == BLACK) {
                     return Optional.of(mrXLoc);
-
                 }
                 return Optional.of(p.location());
             }
@@ -176,23 +175,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         return Optional.empty();
     }
 
-    @Override
-    public boolean isGameOver() {
-        if (currentPlayerIndex == 0) {
-            if (stuck(players.get(0)))
-                return true;
-            if (currentRound == rounds.size()) return true;
-        }
-        boolean allDetectivesStuck = true;
-        for (ScotlandYardPlayer d:detectives) {
-            if (d.location() == players.get(0).location())
-                return true;
-            if (!stuck(d)) allDetectivesStuck = false;
-        }
-        return (allDetectivesStuck);
-    }
-
-    @Override
+     @Override
     public Colour getCurrentPlayer() {
         return players.get(currentPlayerIndex).colour();
     }
@@ -210,6 +193,22 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
     @Override
     public Graph<Integer, Transport> getGraph() {
         return new ImmutableGraph<>(graph);
+    }
+
+    @Override
+    public boolean isGameOver() {
+        if (currentPlayerIndex == 0) {
+            if (stuck(players.get(0)))
+                return true;
+            if (currentRound == rounds.size()) return true;
+        }
+        boolean allDetectivesStuck = true;
+        for (ScotlandYardPlayer d:detectives) {
+            if (d.location() == players.get(0).location())
+                return true;
+            if (!stuck(d)) allDetectivesStuck = false;
+        }
+        return (allDetectivesStuck);
     }
 
     @Override
